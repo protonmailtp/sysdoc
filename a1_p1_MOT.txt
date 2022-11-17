@@ -1,0 +1,74 @@
+import java.util.HashMap;
+
+public class MOT {
+
+    private int op;
+    static HashMap<String, Integer> MODT = new HashMap(27);
+    static HashMap<String, String> CLASSTAB = new HashMap(27);
+    public MOT(){
+        MODT.put("STOP", 1);
+        MODT.put("ADD", 1);
+        MODT.put("MULT", 2);
+        MODT.put("SUB", 3);
+        MODT.put("MOVER", 4);
+        MODT.put("MOVEM", 5);
+        MODT.put("COMP", 6);
+        MODT.put("BC", 7);
+        MODT.put("DIV", 8);
+        MODT.put("READ", 9);
+        MODT.put("PRINT", 10);
+        MODT.put("START", 1);
+        MODT.put("END", 2);
+        MODT.put("ORIGIN", 3);
+        MODT.put("EQU", 4);
+        MODT.put("LTORG", 5);
+        MODT.put("DS", 1);
+        MODT.put("DC", 2);
+        MODT.put("AREG", 1);
+        MODT.put("BREG", 2);
+        MODT.put("CREG", 3);
+        MODT.put("EQ", 1);
+        MODT.put("LT", 2);
+        MODT.put("GT", 3);
+        MODT.put("LE", 4);
+        MODT.put("GE", 5);
+        MODT.put("NE", 6);
+        MODT.put("ANY", 7);
+        CLASSTAB.put("STOP", "IS");
+        CLASSTAB.put("ADD", "IS");
+        CLASSTAB.put("MULT", "IS");
+        CLASSTAB.put("SUB", "IS");
+        CLASSTAB.put("MOVER", "IS");
+        CLASSTAB.put("MOVEM", "IS");
+        CLASSTAB.put("COMP", "IS");
+        CLASSTAB.put("BC", "IS");
+        CLASSTAB.put("DIV", "IS");
+        CLASSTAB.put("READ", "IS");
+        CLASSTAB.put("PRINT", "IS");
+        CLASSTAB.put("START", "AD");
+        CLASSTAB.put("END", "AD");
+        CLASSTAB.put("ORIGIN", "AD");
+        CLASSTAB.put("EQU", "AD");
+        CLASSTAB.put("LTORG", "AD");
+        CLASSTAB.put("DS", "DL");
+        CLASSTAB.put("DC", "DL");
+        CLASSTAB.put("AREG", "RG");
+        CLASSTAB.put("BREG", "RG");
+        CLASSTAB.put("CREG", "RG");
+        CLASSTAB.put("EQ", "CC");
+        CLASSTAB.put("LT", "CC");
+        CLASSTAB.put("GT", "CC");
+        CLASSTAB.put("LE", "CC");
+        CLASSTAB.put("GE", "CC");
+        CLASSTAB.put("NE", "CC");
+        CLASSTAB.put("ANY", "CC");
+    }
+
+    static Integer checkop(String keyser) {
+        return (Integer)MODT.get(keyser);
+    }
+
+    static String checkcls(String keyser) {
+        return (String)CLASSTAB.get(keyser);
+    }
+}

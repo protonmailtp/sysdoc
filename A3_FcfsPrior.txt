@@ -1,0 +1,173 @@
+import java.util.Scanner;
+class FCFS {
+// Function to find the waiting time for all
+// processes
+static void findWaitingTime(int processes[], int n,
+int bt[], int wt[]) {
+// waiting time for first process is 0
+wt[0] = 0;
+// calculating waiting time
+for (int i = 1; i < n; i++) {
+wt[i] = bt[i - 1] + wt[i - 1];
+}
+}
+// Function to calculate turn around time
+static void findTurnAroundTime(int processes[], int n,
+int bt[], int wt[], int tat[]) {
+// calculating turn around time by adding
+// bt[i] + wt[i]
+for (int i = 0; i < n; i++) {
+tat[i] = bt[i] + wt[i];
+}
+}
+//Function to calculate average time
+void findavgTime(int processes[], int n, int bt[]) {
+int wt[] = new int[n], tat[] = new int[n];
+int total_wt = 0, total_tat = 0;
+//Function to find waiting time of all processes
+findWaitingTime(processes, n, bt, wt);
+//Function to find turn around time for all processes
+findTurnAroundTime(processes, n, bt, wt, tat);
+//Display processes along with all details
+System.out.printf("Processes Burst time Waiting"
++" time Turn around time\n");
+// Calculate total waiting time and total turn
+// around time
+for (int i = 0; i < n; i++) {
+total_wt = total_wt + wt[i];
+total_tat = total_tat + tat[i];
+System.out.printf(" %d ", (i + 1));
+System.out.printf(" %d ", bt[i]);
+System.out.printf(" %d", wt[i]);
+System.out.printf(" %d\n", tat[i]);
+}
+float s = (float)total_wt /(float) n;
+int t = total_tat / n;
+System.out.printf("Average waiting time = %f", s);
+System.out.printf("\n");
+System.out.printf("Average turn around time = %d ", t);
+}
+}
+//Shortest Remaining Time First(SJF preemptive)
+class Process
+{
+int pid; // Process ID
+int bt; // Burst Time
+int art; // Arrival Time
+public Process(int pid, int bt, int art)
+{
+this.pid = pid;
+this.bt = bt;
+this.art = art;
+}
+}
+Priority.Java
+class Priority {
+void priority(String processes[], int n, int burstTime[], int priority[]) {
+int numberOfProcess = n;
+int temp;
+String temp2;
+// Sorting process & burst time by priority
+for (int i = 0; i < numberOfProcess - 1; i++) {
+for (int j = 0; j < numberOfProcess - 1; j++) {
+if (priority[j] > priority[j + 1]) {
+temp = priority[j];
+priority[j] = priority[j + 1];
+priority[j + 1] = temp;
+temp = burstTime[j];
+burstTime[j] = burstTime[j + 1];
+burstTime[j + 1] = temp;
+temp2 = processes[j];
+processes[j] = processes[j + 1];
+processes[j + 1] = temp2;
+}
+}
+}
+// TAT - Turn Around Time
+int TAT[] = new int[numberOfProcess + 1];
+int waitingTime[] = new int[numberOfProcess + 1];
+// Calculating Waiting Time & Turn Around Time
+for (int i = 0; i < numberOfProcess; i++) {
+TAT[i] = burstTime[i] + waitingTime[i];
+waitingTime[i + 1] = TAT[i];
+}
+// WT = waiting Time
+int totalWT = 0;
+int totalTAT = 0;
+double avgWT;
+double avgTAT;
+// Print Table
+System.out.println("Process BT WT TAT");
+for (int i = 0; i < numberOfProcess; i++) {
+System.out.println(processes[i] + " " + burstTime[i] + " " + waitingTime[i] + " " + (TAT[i]));
+totalTAT += (waitingTime[i] + burstTime[i]);
+totalWT += waitingTime[i];
+}
+avgWT = totalWT / (double) numberOfProcess;
+avgTAT = totalTAT / (double) numberOfProcess;
+System.out.println("\n Average Wating Time: " + avgWT);
+System.out.println(" Average Turn Around Time: " + avgTAT);
+}
+}
+All.java
+import java.util.Scanner;
+public class All {
+public static void main(String[] args){
+FCFS fcfs = new FCFS();
+Priority pr = new Priority();
+Scanner scan = new Scanner(System.in);
+while(true){
+System.out.println("\n The available algorithms are: ");
+System.out.println("1. FCFS");
+System.out.println("2. Priority");
+System.out.println("3. Exit");
+System.out.println("Choose your algorithm: ");
+int algo = scan.nextInt();
+if (algo==1){
+System.out.println("Enter the number of processes: ");
+int n = scan.nextInt();
+int[] processes = new int[n];
+//Burst time of all processes
+int[] burst_time = new int[n];
+System.out.println("Enter the processes: ");
+for (int i = 0; i < n; i++){
+processes[i] = scan.nextInt();
+}
+System.out.println("Enter the Burst time for he processes: ");
+for (int i = 0; i < n; i++){
+burst_time[i] = scan.nextInt();
+}
+fcfs.findavgTime(processes, n, burst_time);
+}
+else if(algo==2){
+System.out.println("Enter the number of processes: ");
+int n = scan.nextInt();
+String processes[] = new String[n];
+int burstTime[] = new int[n];
+int priority[] = new int[n];
+int p = 1;
+for (int i = 0; i < n; i++) {
+processes[i] = "P" + p;
+p++;
+}
+System.out.print("Enter the Burst time for the processes: ");
+for (int i = 0; i < n; i++) {
+burstTime[i] = scan.nextInt();
+}
+System.out.print("Enter Priority for the processes: ");
+for (int i = 0; i < n; i++) {
+priority[i] = scan.nextInt();
+}
+pr.priority(processes, n, burstTime, priority);
+}
+else if(algo==3){
+System.out.println("Exiting the code...");
+break;
+}
+else{
+System.out.println("Invalid Input");
+}
+}
+scan.close();
+}
+}

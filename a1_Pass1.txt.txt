@@ -1,0 +1,236 @@
+import java.io.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+
+public class PassOnePassTwo {
+
+    int lc = 0;
+    int libtab_ptr = 0, pooltab_ptr = 0;
+    int symIndex = 0, litIndex = 0;
+
+    String out;
+
+    LinkedHashMap<String, TableRow> SYMTAB;
+    ArrayList<TableRow> LITTAB;
+    ArrayList<Integer> POOLTAB;
+    private BufferedReader br;
+
+    public PassOnePassTwo() {
+        SYMTAB = new LinkedHashMap<>();
+        LITTAB = new ArrayList<>();
+        POOLTAB = new ArrayList<>();
+        lc = 0;
+        POOLTAB.add(0);
+    }
+
+    public static void main(String[] args) throws Exception {
+        PassOnePassTwo obj = new PassOnePassTwo();
+        obj.readFile();
+    }
+
+    public void readFile() throws Exception {
+        String prev = "";
+        String line;
+        String code;
+
+        new MOT();
+        BufferedWriter bw = new BufferedWriter(new FileWriter("IC.txt"));
+        br = new BufferedReader(new FileReader("input1.asm"));
+        while ((line = br.readLine()) != null) {
+//            System.out.println(line);
+
+            String page[] = line.split("\\s+");
+
+            if (page[0] != "") {//LABLE VERIFICATION
+//                System.out.print("\tLable->" + page[0] + "\t");
+                if (SYMTAB.containsKey(page[0])) {
+                    SYMTAB.put(page[0], new TableRow(page[0], lc, SYMTAB.get(page[0]).getIndex()));
+                    lc++;
+                } else {
+                    SYMTAB.put(page[0], new TableRow(page[0], lc, ++symIndex));
+
+                }
+            } else {
+                System.out.print("\t\t\t");
+            }
+
+            if (page[1].equals("START")) //CHECK START
+            {
+                lc = Integer.parseInt(page[2]);
+                out = "(" + MOT.checkcls(page[1]) + "," + MOT.checkop(page[1]) + ")\t(C," + page[2] + ")";
+                bw.append(out + "\n");
+
+            } else if (page[1].equals("EQU")) {
+                String split1[] = page[2].split("\\+");
+                int loc = SYMTAB.get(split1[0]).getAddress() + Integer.parseInt(split1[1]);
+                //below If conditions are optional as no IC is generated for them
+                if (page[2].contains("+")) {
+                    String partsslp[] = page[2].split("\\+");
+                    out = "(AD,04)\t(S," + SYMTAB.get(partsslp[0]).getIndex() + ") + " + Integer.parseInt(partsslp[1]);
+
+                } else if (page[2].contains("-")) {
+                    String partsslp[] = page[2].split("\\-");
+                    out = "(AD,04)\t(S," + SYMTAB.get(partsslp[0]).getIndex() + ")-" + Integer.parseInt(partsslp[1]);
+                } else {
+                    out = "(AD,04)\t(C," + Integer.parseInt(page[2] + ")");
+                }
+                bw.write(out + "\n");
+                if (SYMTAB.containsKey(page[0]))
+                    SYMTAB.put(page[0], new TableRow(page[0], loc, SYMTAB.get(page[0]).getIndex()));
+                else
+                    SYMTAB.put(page[0], new TableRow(page[0], loc, ++symIndex));
+
+            } else if (page[1].equals("ORIGIN")) {
+                String partslp[] = (page[2]).split("\\+");
+                out = "(" + MOT.checkcls(page[1]) + "," + MOT.checkop(page[1]) + ")\t(S," + SYMTAB.get(partslp[0]).getIndex() + ") + " + Integer.parseInt(partslp[1]);
+                bw.append(out + "\n");
+
+            } else if (page[1].equals("LTORG")) {
+                int ptr = POOLTAB.get(pooltab_ptr);
+                for (int j = ptr; j < libtab_ptr; j++) {
+                    lc++;
+                    LITTAB.set(j, new TableRow(LITTAB.get(j).getSymbol(), lc));
+                    out = "(" + MOT.checkcls(page[1]) + "," + MOT.checkop(page[1]) + ")\t(C," + LITTAB.get(j).symbol + ")";
+                }
+                bw.append(out + "\n");
+                pooltab_ptr++;
+                lc++;
+                POOLTAB.add(libtab_ptr);
+
+            } else if (page[1].equals("DC")) {
+
+                int size = Integer.parseInt(page[2].replace("'", ""));
+                out = "(" + MOT.checkcls(page[1]) + "," + MOT.checkop(page[1]) + ")\t(C," + size + ")";
+                bw.append(out + "\n");
+
+
+            } else if (page[1].equals("DS")) {
+                lc++;
+                out = "(" + MOT.checkcls(page[1]) + "," + MOT.checkop(page[1]) + ")\t(C," + page[2] + ")";
+                bw.append(out + "\n");
+
+            } else if (page[1].equals("END")) {
+                int ptr = POOLTAB.get(pooltab_ptr);
+                for (int j = ptr; j < pooltab_ptr; j++) {
+                    lc++;
+                    LITTAB.set(j, new TableRow(LITTAB.get(j).getSymbol(), lc));
+                    out = "(" + MOT.checkcls(page[1]) + "," + MOT.checkop(page[1]) + ")\t(C," + LITTAB.get(j).symbol + ")";
+                    bw.append(out + "\n");
+                }
+                pooltab_ptr++;
+                POOLTAB.add(libtab_ptr);
+                out = "(AD,02)";
+                bw.append(out + "\n");
+
+            }
+
+            if (MOT.checkcls(page[1]).equals("IS")) {
+                int len = page.length;
+                String FinalOp = "";
+                for (int i = 2; i < len; i++) {
+                    page[i] = page[i].replace(",", "");
+                    if (MOT.checkcls(page[i]) == "RG") {
+//                        FinalOp += MOT.checkop(page[i]) + "\t";
+                        FinalOp += "  (RG,"+MOT.checkop(page[i])+")   ";
+                    } else {
+                        if (page[i].contains("=")) {
+                            page[i] = page[i].replace("=", "");
+                            page[i] = page[i].replace("'", "");
+                            LITTAB.add(new TableRow(page[i], -1, ++litIndex));
+                            libtab_ptr++;
+                            FinalOp += "(L," + libtab_ptr + ")";
+
+                        } else if (SYMTAB.containsKey(page[i])) {
+                            int Sindex = SYMTAB.get(page[i]).getIndex();
+                            FinalOp += "(S," + Sindex + ")";
+                        } else {
+                            SYMTAB.put(page[i], new TableRow(page[i], -1, ++symIndex));
+                            int Sindex = SYMTAB.get(page[i]).getIndex();
+                            FinalOp += "(S," + Sindex + ")";
+                        }
+
+                    }
+                }
+
+                lc++;
+                out = "(" + MOT.checkcls(page[1]) + "," + MOT.checkop(page[1]) + ")" + FinalOp;
+                bw.append(out + "\n");
+            }
+//            System.out.print("Mneumonic->" + page[1] + "\n");
+
+        }
+        bw.close();
+        Printer("IC");
+        Printer("PTab");
+        Printer("LTab");
+        Printer("STab");
+    }
+
+    public void Printer(String OPT) throws IOException {
+        switch(OPT){
+            case "STab":
+                BufferedWriter rw=new BufferedWriter(new FileWriter("SYMTAB.txt"));
+                //Printing Symbol Table
+                java.util.Iterator<String> iterator = SYMTAB.keySet().iterator();
+                System.out.println("\n\n\tSYMBOL TABLE");
+                System.out.println("_____________________________");
+                while (iterator.hasNext()) {
+                    String key = iterator.next().toString();
+                    TableRow value = SYMTAB.get(key);
+                    System.out.println("|\s\s"+value.getIndex()+"\t|\s\s" + value.getSymbol()+"\t|\s\s\s"+value.getAddress()+"\t\t|");
+
+//                    System.out.println("|.......|.......|...............|");
+                    rw.write(value.getIndex()+"\t" + value.getSymbol()+"\t"+value.getAddress()+"\n");
+                }
+                rw.close();
+                break;
+
+            case "PTab":
+                BufferedWriter prw=new BufferedWriter(new FileWriter("POOLTAB.txt"));
+                System.out.println("\n\n\tPOOL TABLE \n");
+                System.out.println("__________________");
+                for (int i = 0; i <POOLTAB.size()-2; i++) {
+                    System.out.println("|\s\s"+(i+1)+"\t|\s\s#"+(POOLTAB.get(i)+1)+"\t|");
+//                    System.out.println("|.......|...............|");
+                    prw.write((i+1)+"\t#"+(POOLTAB.get(i)+1)+"\n");
+                }
+                prw.close();
+                break;
+
+            case "LTab":
+                BufferedWriter lrw=new BufferedWriter(new FileWriter("LITTAB.txt"));
+                System.out.println("\n\n\tLiteral Table");
+                System.out.println("____________________________");
+                //Processing LITTAB
+                for(int i=0;i<LITTAB.size();i++)
+                {
+                    TableRow row=LITTAB.get(i);
+                    System.out.println("|\s\s"+(i+1)+"\t|\s\s"+row.getSymbol()+"\t|\s\s\s"+row.getAddress()+"\t\t|");
+//                    System.out.println("|.......|.......|...............|");
+                    lrw.write((i+1)+"\t"+row.getSymbol()+"\t"+row.getAddress()+"\n");
+                }
+                lrw.close();
+                break;
+            case "IC":
+                String icLine;
+                System.out.println("\n\nIntermediate Code Generated Sucessfully!");
+                System.out.println("____________________________");
+                BufferedReader icReader = new BufferedReader(new FileReader("IC.txt"));
+                while ((icLine = icReader.readLine()) != null){
+                    System.out.println(icLine);
+                }
+                System.out.println("____________________________");
+                break;
+
+            default:
+                System.out.println("Data Set Not provided");
+                break;
+        }
+
+    }
+
+}
+
+
+
+
