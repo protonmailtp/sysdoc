@@ -6,7 +6,7 @@ public class MOT {
     static HashMap<String, Integer> MODT = new HashMap(27);
     static HashMap<String, String> CLASSTAB = new HashMap(27);
     public MOT(){
-        MODT.put("STOP", 1);
+        MODT.put("STOP", 0);
         MODT.put("ADD", 1);
         MODT.put("MULT", 2);
         MODT.put("SUB", 3);
